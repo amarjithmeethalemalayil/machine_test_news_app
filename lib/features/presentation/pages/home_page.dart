@@ -56,45 +56,49 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CommonAppbar(),
-      body: SafeArea(
-        child: Consumer<NewsProvider>(
-          builder: (context, provider, child) {
-            final state = _getState(provider);
-            return RefreshIndicator(
-              onRefresh: _onRefresh,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    SearchBox(
-                      controller: _searchController,
-                      onChanged: _handleSearch,
-                      onSubmitted: _handleSearch,
-                    ),
-                    const SizedBox(height: 24),
-                    _topHeader(provider),
-                    const SizedBox(height: 16),
-                    if (state == NewsState.loading)
-                      _centeredChild(const Loader())
-                    else if (state == NewsState.error)
-                      _centeredChild(
-                        ErrorText(errorMessage: provider.errorMessage),
-                      )
-                    else if (state == NewsState.empty)
-                      _centeredChild(
-                        const ErrorText(errorMessage: 'No articles found.'),
-                      )
-                    else
-                      _newsList(provider),
-                    const SizedBox(height: 20),
-                  ],
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: SafeArea(
+          child: Consumer<NewsProvider>(
+            builder: (context, provider, child) {
+              final state = _getState(provider);
+              return RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20),
+                      SearchBox(
+                        controller: _searchController,
+                        onChanged: _handleSearch,
+                        onSubmitted: _handleSearch,
+                      ),
+                      const SizedBox(height: 24),
+                      _topHeader(provider),
+                      const SizedBox(height: 16),
+                      if (state == NewsState.loading)
+                        _centeredChild(const Loader())
+                      else if (state == NewsState.error)
+                        _centeredChild(
+                          ErrorText(errorMessage: provider.errorMessage),
+                        )
+                      else if (state == NewsState.empty)
+                        _centeredChild(
+                          const ErrorText(errorMessage: 'No articles found.'),
+                        )
+                      else
+                        _newsList(provider),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -162,7 +166,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _centeredChild(Widget child) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.6, // centers nicely
+      height: MediaQuery.of(context).size.height * 0.6,
       child: Center(child: child),
     );
   }

@@ -11,26 +11,52 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
   cupertino_icons: ^1.0.8
   http: ^1.5.0
   provider: ^6.1.5+1
   flutter_dotenv: ^5.0.2
   cached_network_image: ^3.4.1
   get_it: ^8.2.0
+  flutter_native_splash: ^2.4.7
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   flutter_lints: ^5.0.0
 
 flutter:
-
   uses-material-design: true
-
   assets:
     - .env
     - assets/images/
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/images/app_logo.png
+  branding: assets/images/app_logo.png
+  android: true
+  ios: true
+  web: false
+  android_gravity: center
+  ios_content_mode: center
+  android_12:
+    image: assets/images/app_logo.png
+    icon_background_color: "#ffffff"
+    image_dark: assets/images/app_logo.png
+    icon_background_color_dark: "#000000"
+  color_dark: "#000000"
+  image_dark: assets/images/app_logo.png
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_logo.png"   
+  adaptive_icon_background: "#ffffff"       
+  adaptive_icon_foreground: "assets/images/app_logo.png"
+  min_sdk_android: 21                       
+
+
+
 
 
