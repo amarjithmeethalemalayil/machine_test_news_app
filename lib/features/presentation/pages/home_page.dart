@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:machine_test_news_app/features/presentation/utils/news_state.dart';
 import 'package:provider/provider.dart';
+import 'package:machine_test_news_app/features/presentation/widgets/error_text.dart';
+import 'package:machine_test_news_app/features/presentation/widgets/loader.dart';
 import 'package:machine_test_news_app/features/presentation/provider/news_provider.dart';
 import '../../domain/entity/article_entity.dart';
 import '../widgets/common_appbar.dart';
@@ -14,22 +17,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _isInitialized = false;
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(_fetchNews);
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_isInitialized) {
-      _isInitialized = true;
-      Future.microtask(() => _fetchNews());
-    }
   }
 
   Future<void> _fetchNews() async {
@@ -46,6 +45,13 @@ class _HomePageState extends State<HomePage> {
     provider.searchArticles(query);
   }
 
+  NewsState _getState(NewsProvider provider) {
+    if (provider.isLoading) return NewsState.loading;
+    if (provider.errorMessage != null) return NewsState.error;
+    if (provider.articles.isEmpty) return NewsState.empty;
+    return NewsState.success;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,6 +59,7 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: Consumer<NewsProvider>(
           builder: (context, provider, child) {
+            final state = _getState(provider);
             return RefreshIndicator(
               onRefresh: _onRefresh,
               child: SingleChildScrollView(
@@ -62,76 +69,26 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-
-                    // 🔍 Search Box
                     SearchBox(
                       controller: _searchController,
                       onChanged: _handleSearch,
                       onSubmitted: _handleSearch,
                     ),
                     const SizedBox(height: 24),
-
-                    // 📰 Section Title
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          provider.searchQuery.isEmpty
-                              ? 'Breaking News'
-                              : 'Search Results',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                        if (provider.searchQuery.isNotEmpty)
-                          TextButton(
-                            onPressed: () {
-                              _searchController.clear();
-                              provider.clearSearch();
-                            },
-                            child: const Text('Clear'),
-                          ),
-                      ],
-                    ),
+                    _topHeader(provider),
                     const SizedBox(height: 16),
-
-                    // ⏳ Loading State
-                    if (provider.isLoading)
-                      const Center(child: CircularProgressIndicator())
-
-                    // ⚠️ Error State
-                    else if (provider.errorMessage != null)
-                      Center(child: Text(provider.errorMessage!))
-
-                    // ✅ News List
+                    if (state == NewsState.loading)
+                      _centeredChild(const Loader())
+                    else if (state == NewsState.error)
+                      _centeredChild(
+                        ErrorText(errorMessage: provider.errorMessage),
+                      )
+                    else if (state == NewsState.empty)
+                      _centeredChild(
+                        const ErrorText(errorMessage: 'No articles found.'),
+                      )
                     else
-                      ListView.builder(
-                        itemCount: provider.articles.length,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          final Article news = provider.articles[index];
-                          final String uniqueKey = '${news.title}_$index';
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: InkWell(
-                              key: ValueKey(uniqueKey),
-                              onTap: () {
-                              },
-                              child: NewsBox(
-                                key: ValueKey(uniqueKey),
-                                obj: uniqueKey,
-                                imageUrl: news.urlToImage ??
-                                    'https://via.placeholder.com/150',
-                                title: news.title ?? 'No title',
-                                publishedAt: (news.publishedAt ?? DateTime.now()).toIso8601String(),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-
+                      _newsList(provider),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -140,6 +97,73 @@ class _HomePageState extends State<HomePage> {
           },
         ),
       ),
+    );
+  }
+
+  Widget _topHeader(NewsProvider provider) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          provider.searchQuery.isEmpty ? 'Breaking News' : 'Search Results',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        if (provider.searchQuery.isNotEmpty)
+          TextButton(
+            onPressed: () {
+              _searchController.clear();
+              provider.clearSearch();
+            },
+            child: const Text('Clear'),
+          ),
+      ],
+    );
+  }
+
+  Widget _newsList(NewsProvider provider) {
+    return ListView.separated(
+      itemCount: provider.articles.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        final Article news = provider.articles[index];
+        final String uniqueKey = '${news.title}_$index';
+        return InkWell(
+          key: ValueKey(uniqueKey),
+          onTap: () {
+            Navigator.pushNamed(
+              context,
+              '/news-detail',
+              arguments: {
+                'imageUrl': news.urlToImage,
+                'title': news.title ?? 'No title',
+                'content': news.content ?? 'No content available',
+                'author': news.author ?? 'Unknown',
+                'publishedAt': news.publishedAt?.toIso8601String() ?? 'unkown',
+                'heroTag': uniqueKey,
+              },
+            );
+          },
+          child: NewsBox(
+            key: ValueKey(uniqueKey),
+            obj: uniqueKey,
+            imageUrl: news.urlToImage ?? 'https://via.placeholder.com/150',
+            title: news.title ?? 'No title',
+            publishedAt: (news.publishedAt ?? DateTime.now()).toIso8601String(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _centeredChild(Widget child) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.6, // centers nicely
+      child: Center(child: child),
     );
   }
 }

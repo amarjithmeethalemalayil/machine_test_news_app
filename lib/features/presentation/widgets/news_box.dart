@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:machine_test_news_app/core/constants/asset_helper/asset_helper.dart';
 import '../../../core/theme/app_colors.dart';
 
 class NewsBox extends StatelessWidget {
-  final String imageUrl;
+  final String? imageUrl;
   final String title;
   final Object obj;
   final String publishedAt;
 
   const NewsBox({
     super.key,
-    required this.imageUrl,
+    this.imageUrl,
     required this.title,
     required this.publishedAt,
     required this.obj,
@@ -18,8 +19,12 @@ class NewsBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String displayImage = imageUrl ?? '';
+
     return Card(
       color: AppColors.bgColor,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -31,30 +36,33 @@ class NewsBox extends StatelessWidget {
               ),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Image.network(
-                  imageUrl,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      color: AppColors.border,
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                child: displayImage.isEmpty
+                    ? Image.asset(
+                        AssetHelper.placeholderImage,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                      )
+                    : CachedNetworkImage(
+                        imageUrl: displayImage,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: AppColors.border,
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: AppColors.border,
+                          child: const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 48,
+                              color: AppColors.shadowColor,
+                            ),
+                          ),
+                        ),
                       ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: AppColors.border,
-                    child: const Center(
-                      child: Icon(
-                        Icons.broken_image,
-                        size: 48,
-                        color: AppColors.shadowColor,
-                      ),
-                    ),
-                  ),
-                ),
               ),
             ),
           ),
