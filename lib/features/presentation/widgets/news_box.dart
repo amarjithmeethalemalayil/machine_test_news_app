@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:machine_test_news_app/core/constants/asset_helper/asset_helper.dart';
+import 'package:machine_test_news_app/features/presentation/utils/time_formater.dart';
 import '../../../core/theme/app_colors.dart';
 
 class NewsBox extends StatelessWidget {
@@ -87,7 +88,7 @@ class NewsBox extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      publishedAt,
+                      TimeFormater.formatPublishedDate(publishedAt),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],

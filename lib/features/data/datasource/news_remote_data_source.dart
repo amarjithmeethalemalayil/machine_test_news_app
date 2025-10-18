@@ -21,9 +21,7 @@ class NewsRemoteDataSourceImpl implements NewsRemoteDataSource {
           'page': page.toString(),
         },
       );
-
       final articlesJson = jsonMap['articles'] as List<dynamic>?;
-
       if (articlesJson == null || articlesJson.isEmpty) {
         return [];
       }

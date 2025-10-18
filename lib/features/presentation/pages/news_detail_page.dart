@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:machine_test_news_app/core/theme/app_colors.dart';
+import 'package:machine_test_news_app/features/presentation/utils/time_formater.dart';
 import 'package:machine_test_news_app/features/presentation/widgets/common_appbar.dart';
 
 class NewsDetailPage extends StatelessWidget {
@@ -85,7 +86,10 @@ class NewsDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(author, style: TextStyle(fontWeight: FontWeight.w600)),
-            Text(publishedAt, style: TextStyle(color: AppColors.shadowColor)),
+            Text(
+              TimeFormater.formatPublishedDate(publishedAt),
+              style: TextStyle(color: AppColors.shadowColor),
+            ),
           ],
         ),
       ],
