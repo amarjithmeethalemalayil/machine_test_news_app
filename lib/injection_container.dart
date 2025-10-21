@@ -28,6 +28,5 @@ Future<void> initDI({required String baseUrl, required String apiKey}) async {
     () => FetchNewsUseCase(newsRepo: sl()),
   );
 
-  // register NewsBloc instead of a Provider
   sl.registerFactory<NewsBloc>(() => NewsBloc(newsUseCase: sl()));
 }

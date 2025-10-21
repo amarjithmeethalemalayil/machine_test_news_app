@@ -21,10 +21,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // avoid using BuildContext across async gaps — post-frame with mounted check
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<NewsBloc>().add(const FetchNewsEvent(page: 1, pageSize: 10));
+      context.read<NewsBloc>().add(FetchNewsEvent(page: 1, pageSize: 10));
     });
   }
 
@@ -34,15 +33,12 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  // ensure BuildContext is not used after awaits by capturing bloc first
   Future<void> _onRefresh() async {
     final bloc = context.read<NewsBloc>();
-    bloc.add(const FetchNewsEvent(page: 1, pageSize: 10));
-    // If you await something here later, continue to use `bloc` instead of `context`
+    bloc.add(FetchNewsEvent(page: 1, pageSize: 10));
   }
 
   void _handleSearch(String query) {
-    // synchronous usage is fine; if you make this async later capture bloc first
     context.read<NewsBloc>().add(SearchArticlesEvent(query));
   }
 
