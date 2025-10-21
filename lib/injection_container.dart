@@ -5,7 +5,7 @@ import 'package:machine_test_news_app/features/data/datasource/news_remote_data_
 import 'package:machine_test_news_app/features/data/repository/news_repository_impl.dart';
 import 'package:machine_test_news_app/features/domain/repository/news_repository.dart';
 import 'package:machine_test_news_app/features/domain/usecase/fetch_news_usecase.dart';
-import 'package:machine_test_news_app/features/presentation/provider/news_provider.dart';
+import 'package:machine_test_news_app/features/presentation/bloc/news_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -28,5 +28,6 @@ Future<void> initDI({required String baseUrl, required String apiKey}) async {
     () => FetchNewsUseCase(newsRepo: sl()),
   );
 
-  sl.registerFactory<NewsProvider>(() => NewsProvider(newsUseCase: sl()));
+  // register NewsBloc instead of a Provider
+  sl.registerFactory<NewsBloc>(() => NewsBloc(newsUseCase: sl()));
 }
